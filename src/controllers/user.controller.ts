@@ -9,17 +9,24 @@ export class UserController {
 
     constructor() {
         this.router = Router();
-        this.user_service = new UserService()
+        this.user_service = new UserService();
         this.routes();
     }
 
     public index(req:Request,res:Response){
         res.send('User index');
     }
-    public create(req:Request,res:Response){
+
+    public create = async (req:Request,res:Response) => {
         const user_req = req['body'] as UserCreate;
-        const new_user = this.user_service.create(user_req);
-        res.send(new_user);
+        try {
+            const new_user =  await this.user_service.create(user_req);
+            res.send(new_user);
+        }   
+        catch (error){
+            res.send('error')
+        }
+
     }
     public delete(req:Request,res:Response){
         res.send('User delete');

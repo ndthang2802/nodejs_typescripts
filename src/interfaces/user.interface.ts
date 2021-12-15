@@ -4,3 +4,13 @@ export interface IUserCreate {
     full_name : string;
     phone : string;
 }
+
+
+
+export interface IUserRespond {
+    username : string;
+    full_name : string;
+    phone : string;
+    access_token : string,
+    refresh_token : string
+}

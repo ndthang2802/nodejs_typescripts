@@ -19,4 +19,11 @@ export class User {
 
     @Column('time')
     created_at! : Date;
+
+    @Column()
+    access_token!: string;
+
+    @Column()
+    refresh_token!: string;
+
 }

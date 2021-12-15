@@ -1,6 +1,5 @@
 import {getConnection} from 'typeorm';
-import { User } from '../entities/user.entity';
-import { UserCreate } from '../model/user.model';
+import { UserCreate, UserRespond } from '../model/user.model';
 import { UserRepository } from '../repository/user.repository';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from "bcryptjs";
@@ -13,6 +12,18 @@ export class UserService {
     }
     
 
+    private hashPassword  = async (password : string) => {
+        var pw = await bcrypt.hash(password,10);
+        return pw
+    }
+
+    private comparePassword = async (password : string, passwordHash : string ) : Promise<boolean> => {
+        if ( password === passwordHash){
+            return true;
+        }
+        return false;
+    }
+
     public findByUsername = async (username : string) => {
 
         try {
@@ -21,7 +32,7 @@ export class UserService {
                     username : username,
                 }
             });
-            if(user){
+            if(user.length){
                 return user;
             }
             return null;
@@ -32,27 +43,27 @@ export class UserService {
 
         
     }
-    public hashPassword  = async (password : string) => {
-        var pw = await bcrypt.hash(password,10);
-        return pw
-    }
 
-    public create = async (user : UserCreate) => {
+    public  create = async (user : UserCreate)  : Promise<UserRespond> => {
         try {
             var _user = await this.findByUsername(user.username);
             if( _user ){
                 throw new Error('Username taken')
             }
 
-            var new_user = new User();
+            const user_saving = await this.user_repo.save({
+                id : uuidv4(),
+                username : user.username,
+                password : await this.hashPassword(user.password),
+                full_name : user.full_name,
+                phone_number : user.phone,
+                created_at :  new Date(),
+                access_token : "",
+                refresh_token : ""
+            });
 
-            new_user.id = uuidv4();
-            new_user.username = user.username;
-            new_user.password = await this.hashPassword(user.password);
-            new_user.full_name = user.full_name;
-            new_user.phone_number = user.phone;
-            new_user.created_at =  new Date()
-            const user_respond = await this.user_repo.save(new_user);
+            const user_respond = new UserRespond(user_saving);
+
             return user_respond;
 
         }
@@ -60,4 +71,6 @@ export class UserService {
             throw new Error()
         }
     }
+
+    
 }

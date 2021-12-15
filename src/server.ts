@@ -3,6 +3,7 @@ import express , {Request, Response} from 'express';
 import { createConnection } from 'typeorm';
 import config from './config/ormconfig';
 import { UserController } from './controllers/user.controller';
+import { AuthMiddleware } from "./middleware/auth.middleware";
 
 class Server {
     
@@ -19,6 +20,9 @@ class Server {
 
     public configuration(){
         this.app.set('port', process.env.PORT || 5000);
+        this.app.use(express.json())
+        var auth = new AuthMiddleware()
+        this.app.use(auth.invoke)
     }
 
     public async routes(){

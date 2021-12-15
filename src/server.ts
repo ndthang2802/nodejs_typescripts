@@ -20,9 +20,9 @@ class Server {
 
     public configuration(){
         this.app.set('port', process.env.PORT || 5000);
-        this.app.use(express.json())
         var auth = new AuthMiddleware()
         this.app.use(auth.invoke)
+        this.app.use(express.json())
     }
 
     public async routes(){

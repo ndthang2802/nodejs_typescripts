@@ -1,14 +1,17 @@
 import {getConnection} from 'typeorm';
-import { UserCreate, UserRespond } from '../model/user.model';
+import { UserCreate, UserLogin, UserRespond, UserTokenPayload } from '../model/user.model';
 import { UserRepository } from '../repository/user.repository';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from "bcryptjs";
+import { TokenService } from './token.service';
 
 export class UserService {
     private user_repo : UserRepository;
+    private token_service : TokenService;
 
     constructor(){
         this.user_repo = getConnection('sales').getCustomRepository(UserRepository);
+        this.token_service = new TokenService()
     }
     
 
@@ -18,10 +21,8 @@ export class UserService {
     }
 
     private comparePassword = async (password : string, passwordHash : string ) : Promise<boolean> => {
-        if ( password === passwordHash){
-            return true;
-        }
-        return false;
+        const match = await bcrypt.compare(password, passwordHash);
+        return match
     }
 
     public findByUsername = async (username : string) => {
@@ -33,7 +34,7 @@ export class UserService {
                 }
             });
             if(user.length){
-                return user;
+                return user[0];
             }
             return null;
         }
@@ -67,8 +68,45 @@ export class UserService {
             return user_respond;
 
         }
-        catch (error) {
-            throw new Error()
+        catch (err) {
+            if (err instanceof Error) {
+                throw new Error(err.message);
+            }
+            else {
+                throw new Error()
+            }
+        }
+    }
+
+
+    public login = async (user : UserLogin) => {
+        try {
+            var _user = await this.findByUsername(user.username);
+
+            if( !_user ){
+                throw new Error("Username not exist")
+            }
+
+            const password_match = await this.comparePassword(user.password, _user.password);
+
+            if ( !password_match ) {
+                throw new Error('Incorect password');
+            }
+
+            const tokens = this.token_service.generateToken(new UserTokenPayload(_user));
+
+            _user.access_token = tokens.access_token;
+            _user.refresh_token = tokens.refresh_token;
+
+            return new UserRespond(_user);
+
+
+        }
+        catch (err) {
+            if (err instanceof Error){
+                throw new Error(err.message);
+            }
+             
         }
     }
 

@@ -1,6 +1,7 @@
 import {Router, Request, Response} from 'express';
 import { User } from '../entities/user.entity';
-import { UserCreate } from '../model/user.model';
+import { CustomRequest } from '../interfaces/customRequest.interface';
+import { UserCreate, UserLogin } from '../model/user.model';
 import { UserService } from '../services/user.service';
 
 export class UserController {
@@ -28,15 +29,30 @@ export class UserController {
         }
 
     }
-    public delete(req:Request,res:Response){
-        res.send('User delete');
+    public delete(req:CustomRequest,res:Response){
+        res.send(req.user);
     }
     public update(req:Request,res:Response){
         res.send('User update');
-    }    
+    }
+    public login = async (req : Request, res : Response) => {
+        const login_re = req['body'] as UserLogin;
+        try {
+            const login_data = await this.user_service.login(login_re);
+            res.send(login_data);
+        }
+        catch(err) {
+            if (err instanceof Error) {
+                res.status(400).send(err.message);
+            }
+            
+        }
+    }
+    
     public routes() {
         this.router.get("/",this.index);
         this.router.post('/create',this.create);
+        this.router.post('/login',this.login);
         this.router.put('/update',this.update);
         this.router.delete('/delete',this.delete);
     }

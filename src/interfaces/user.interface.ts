@@ -6,11 +6,22 @@ export interface IUserCreate {
 }
 
 
-
+export interface IUserTokenPayload {
+    id : string;
+    username : string;
+    full_name : string;
+    phone : string;
+}
 export interface IUserRespond {
     username : string;
     full_name : string;
     phone : string;
-    access_token : string,
-    refresh_token : string
+    access_token : string;
+    refresh_token : string;
+}
+
+
+export interface IUserLogin {
+    username : string;
+    password : string;
 }

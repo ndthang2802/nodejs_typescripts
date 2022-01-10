@@ -26,4 +26,7 @@ export class User {
     @Column()
     refresh_token!: string;
 
+    @Column()
+    refresh_token_expired_day!: Date;
+
 }

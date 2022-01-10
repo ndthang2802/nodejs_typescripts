@@ -20,14 +20,15 @@ class Server {
 
     public configuration(){
         this.app.set('port', process.env.PORT || 5000);
-        var auth = new AuthMiddleware()
-        this.app.use(auth.invoke)
         this.app.use(express.json())
     }
 
     public async routes(){
 
         await this.connectDB();
+
+        var auth = new AuthMiddleware()
+        this.app.use(auth.invoke)
         
         this.app.get("/", (req: Request, res: Response) => {
             res.send('Hello words')

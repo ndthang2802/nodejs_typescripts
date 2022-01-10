@@ -9,10 +9,10 @@ export class AuthMiddleware {
 
     constructor(){
         this.token_service = new TokenService();
-        this.unprotected_path = ["/", "/api/user" ,"/api/user/login", "/api/user/create" ]
+        this.unprotected_path = ["/","/favicon.ico", "/api/user" ,"/api/user/login", "/api/user/create" ]
     }
 
-    public invoke = (req : CustomRequest, res: Response , next : express.NextFunction) : void => {
+    public invoke = async (req : CustomRequest, res: Response , next : express.NextFunction) : Promise<any> => {
 
         if (this.unprotected_path.includes(req.path) ) {
             return next()
@@ -23,11 +23,11 @@ export class AuthMiddleware {
 
 
         if ( !access_token ) {
-            res.status(403).send('Token is not provided')
+            return res.status(403).send('Token is not provided')
         }
 
         try {
-            const decoded = this.token_service.verify_access(access_token);
+            const decoded = await this.token_service.verify_access(access_token);
             req.user = JSON.stringify(decoded);
             
         }

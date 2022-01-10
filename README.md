@@ -1,1 +1,1 @@
-# SHOPPING APP USING NODEJS TYPESCRIPTS REACT
+# Shopping app using NodeJS Typescripts ReactJS

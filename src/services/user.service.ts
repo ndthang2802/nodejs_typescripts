@@ -1,9 +1,10 @@
-import {getConnection} from 'typeorm';
+import {DeleteResult, getConnection} from 'typeorm';
 import { UserCreate, UserLogin, UserRespond, UserTokenPayload } from '../model/user.model';
 import { UserRepository } from '../repository/user.repository';
 import { v4 as uuidv4 } from 'uuid';
 import bcrypt from "bcryptjs";
 import { TokenService } from './token.service';
+import { UserDelete } from '../model/user.model';
 
 export class UserService {
     private user_repo : UserRepository;
@@ -40,9 +41,25 @@ export class UserService {
         }
         catch {
             throw new Error('Database query error')
-        }
+        }        
+    }
 
-        
+    public findById = async (id : string) => {
+
+        try {
+            const user = await this.user_repo.find({
+                where : {
+                    id : id,
+                }
+            });
+            if(user.length){
+                return user[0];
+            }
+            return null;
+        }
+        catch {
+            throw new Error('Database query error')
+        }        
     }
 
     public  create = async (user : UserCreate)  : Promise<UserRespond> => {
@@ -79,7 +96,7 @@ export class UserService {
     }
 
 
-    public login = async (user : UserLogin) => {
+    public login = async (user : UserLogin) : Promise<UserRespond> => {
         try {
             var _user = await this.findByUsername(user.username);
 
@@ -97,6 +114,7 @@ export class UserService {
 
             _user.access_token = tokens.access_token;
             _user.refresh_token = tokens.refresh_token;
+            _user.refresh_token_expired_day = new Date(60*60*24*7)
 
             return new UserRespond(_user);
 
@@ -106,9 +124,50 @@ export class UserService {
             if (err instanceof Error){
                 throw new Error(err.message);
             }
-             
+            else {
+                throw new Error()
+            }
         }
     }
+    public delete = async (user : UserDelete) : Promise<DeleteResult> => {
+        try {
+            const result = await this.user_repo.delete(user.id)
+            return result
+        }
+        catch (err){
+            if (err instanceof Error){
+                throw new Error(err.message);
+            }
+            else {
+                throw new Error()
+            }
+        }
+    }
+
+    public getRefreshTokenAndExpiredTime = async (userId : string)  => {
+        try {
+            const user = await this.user_repo.find({ 
+                where : { 
+                    id : userId
+                }
+            });
+            
+            if (user.length) {
+                return user[0].refresh_token , user[0].refresh_token_expired_day.getTime();
+            }
+        }
+        catch (err) {
+            if (err instanceof Error){
+                throw new Error(err.message);
+            }
+            else {
+                throw new Error()
+            }
+        }
+    }
+
+    //public revoke = async (user : Us):
+
 
     
 }

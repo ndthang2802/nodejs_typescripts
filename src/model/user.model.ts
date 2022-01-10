@@ -1,5 +1,5 @@
 import { User } from "../entities/user.entity";
-import { IUserCreate, IUserLogin, IUserRespond, IUserTokenPayload } from "../interfaces/user.interface";
+import { IUserCreate, IUserDelete, IUserLogin, IUserRespond, IUserTokenPayload } from "../interfaces/user.interface";
 
 export class UserCreate implements IUserCreate {
     constructor(
@@ -31,6 +31,12 @@ export class UserLogin implements IUserLogin {
     constructor(
         public username : string,
         public password : string
+    ){}
+}
+
+export class UserDelete implements IUserDelete {
+    constructor(
+        public id : string
     ){}
 }
 
